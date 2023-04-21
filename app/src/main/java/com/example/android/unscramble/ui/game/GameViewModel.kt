@@ -1,6 +1,8 @@
 package com.example.android.unscramble.ui.game
 
 import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
 
@@ -8,16 +10,15 @@ class GameViewModel : ViewModel() {
 
 
     // must be private so outside can't randomly change score
-    private var _score = 0
-    private var _currentWordCount = 0
-    private lateinit var _currentScrambledWord:String
+    private val _score = MutableLiveData(0)
+    private val _currentWordCount = MutableLiveData<Int>(0)
+    private val _currentScrambledWord=MutableLiveData<String>("")
     private var wordList: MutableList<String> = mutableListOf()
-    //private var wordList : MutableList<String> = mutableListOf()
     lateinit var currentWord:String
 
-    public val score : Int get() = _score
-    public val currentWordCount : Int get()=_currentWordCount
-    public val currentScrambledWord : String get() = _currentScrambledWord
+    public val score : MutableLiveData<Int> get() = _score
+    public val currentWordCount : MutableLiveData<Int> get()=_currentWordCount
+    public val currentScrambledWord : LiveData<String>  get() = _currentScrambledWord
 
     // yOUT GOT TO BE KIDDING ME!???!!? INIT HAS TO GO AFTER THE VARIABLES LOL LLLLLL
     init{
@@ -26,7 +27,7 @@ class GameViewModel : ViewModel() {
     }
 
     private fun increaseScore() {
-        _score += SCORE_INCREASE
+        _score.value = (_score.value)?.plus(SCORE_INCREASE)
     }
 
     fun isUserWordCorrect(playerWord: String): Boolean {
@@ -38,8 +39,8 @@ class GameViewModel : ViewModel() {
     }
 
     fun reinitializeData() {
-        _score = 0
-        _currentWordCount = 0
+        _score.value = 0
+        _currentWordCount.value = 0
         wordList.clear()
         getNextWord()
     }
@@ -57,13 +58,13 @@ class GameViewModel : ViewModel() {
             getNextWord()
         }else{
             wordList.add(currentWord)
-            _currentScrambledWord=String(tempWord)
-            _currentWordCount++
+            _currentScrambledWord.value=String(tempWord)
+            _currentWordCount.value=(_currentWordCount.value)?.inc()
         }
     }
 
     fun nextWord(): Boolean{
-        if (currentWordCount< MAX_NO_OF_WORDS) {
+        if (_currentWordCount.value!! < MAX_NO_OF_WORDS) {
             getNextWord()
             return true
         }else{
